@@ -10,7 +10,7 @@ import glob
 import random
 
 
-def load_images():
+def load_images(channel):
 	##
 	## IN PROGRESS
 	##
@@ -29,7 +29,8 @@ def load_images():
 	train_proportion = 0.7
 
 	## Select a single comination of channel to start
-	channel_selected = "FITC.A_APC.AF750.A"
+	#channel_selected = "FITC.A_APC.AF750.A"
+	channel_selected = channel
 	raw_files = glob.glob("data/images/raw/*"+str(channel_selected)+".png")
 	compensation_files = glob.glob("data/images/compensated/*"+str(channel_selected)+".png")
 
@@ -97,7 +98,7 @@ def load_images():
 
 
 
-def run_CNN():
+def run_CNN(train_X,train_Y,test_X,test_Y, id_run):
 	##
 	## Very immature step
 	## Just run the CNN for now,
@@ -106,7 +107,7 @@ def run_CNN():
 	## WORK IN PROGRESS
 	##
 
-	(train_X,train_Y), (test_X,test_Y) = load_images()
+
 
 	print('Training data shape : ', train_X.shape, train_Y.shape)
 	classes = np.unique(train_Y)
@@ -155,7 +156,7 @@ def run_CNN():
 	from keras.layers.advanced_activations import LeakyReLU
 
 	batch_size = 32
-	epochs = 15
+	epochs = 50
 	num_classes = 2
 
 	fashion_model = Sequential()
@@ -179,10 +180,19 @@ def run_CNN():
 
 	fashion_train = fashion_model.fit(train_X, train_label, batch_size=batch_size,epochs=epochs,verbose=1,validation_data=(valid_X, valid_label))
 
+
+	log_file = open("log/"+str(id_run)+".log", "w")
+
+
+
 	test_eval = fashion_model.evaluate(test_X, test_Y_one_hot, verbose=0)
 	print('Test loss:', test_eval[0])
 	print('Test accuracy:', test_eval[1])
 
+	log_file.write('Test loss:'+str(test_eval[0]))
+	log_file.write('Test accuracy:'+str(test_eval[1]))
+
+	log_file.close()
 
 	accuracy = fashion_train.history['acc']
 	val_accuracy = fashion_train.history['val_acc']
@@ -193,10 +203,26 @@ def run_CNN():
 	plt.plot(epochs, val_accuracy, 'b', label='Validation accuracy')
 	plt.title('Training and validation accuracy')
 	plt.legend()
+	plt.savefig("log/"+str(id_run)+"_acc.png")
 	plt.figure()
 	plt.plot(epochs, loss, 'bo', label='Training loss')
 	plt.plot(epochs, val_loss, 'b', label='Validation loss')
 	plt.title('Training and validation loss')
 	plt.legend()
-	plt.show()
+	plt.savefig("log/"+str(id_run)+"_loss.png")
+	#plt.show()
 	plt.close()
+
+
+
+
+
+channel_list = ["PC5.5.A_APC.AF750.A","PC5.5.A_APC.A","PC5.5.A_KO.A","PC5.5.A_PB.A","PC5.5.A_PC7.A","PC7.A_APC.AF750.A","PC7.A_APC.A","PC7.A_KO.A","PC7.A_PB.A","PE.A_APC.AF750.A","PE.A_APC.A","PE.A_KO.A","PE.A_PB.A","PE.A_PC5.5.A","PE.A_PC7.A","PB.A_KO.A","FITC.A_PE.A","FITC.A_PC7.A","FITC.A_PC5.5.A","FITC.A_PB.A","FITC.A_KO.A","FITC.A_APC.A","FITC.A_APC.AF750.A","APC.A_APC.AF750.A","APC.AF750.A_KO.A","APC.AF750.A_PB.A","APC.A_KO.A","APC.A_PB.A"]
+
+for channel in channel_list:
+
+	(X_train, Y_train), (X_validation, Y_validation) = load_images(channel)
+	run_CNN(X_train, Y_train, X_validation, Y_validation, channel)
+
+
+
