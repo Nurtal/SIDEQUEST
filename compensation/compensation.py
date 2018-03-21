@@ -271,11 +271,69 @@ def sex_matrix(parent_matrix_1, parent_matrix_2):
 
 
 
-machin = load_matrix_from_compensation_file("choucroute_is_fun.txt")
-truc = load_matrix_from_compensation_file("Panel_1_UBO_32151130.txt")
+import os
+import shutil
 
-bidule = sex_matrix(machin, truc)
-print bidule
+def generate_images_from_fcs():
+	##
+	## IN PROGRESS
+	##
+
+	## training dataset
+
+	## uncompsated
+	## list input fcs file
+	input_files = glob.glob("data/fcs/raw/*.fcs")
+
+	## run R script
+	for fcs_file in input_files:
+
+		print "[INFO] - Generate image for "+str(fcs_file)
+		os.system("Rscript print_plot.R "+str(fcs_file))
+
+	## deal with generated images
+	output_files = glob.glob("data/fcs/raw/*.png")
+	for png_file in output_files:
+
+		print "[INFO] - Moving image "+str(png_file)
+		dist = png_file.split("/")
+		dist = dist[-1]
+		dist = "data/images/raw/"+str(dist)
+
+		shutil.copy(png_file, dist)
+
+	## compensated
+	## list input fcs file
+	input_files = glob.glob("data/fcs/compensated/*.fcs")
+
+	## run R script
+	for fcs_file in input_files:
+		print "[INFO] - Generate image for "+str(fcs_file)
+		os.system("Rscript print_plot.R "+str(fcs_file))
+
+	## deal with generated images
+	output_files = glob.glob("data/fcs/compensated/*.png")
+	for png_file in output_files:
+
+		print "[INFO] - Moving image "+str(png_file)
+		dist = png_file.split("/")
+		dist = dist[-1]
+		dist = "data/images/compensated/"+str(dist)
+
+		shutil.copy(png_file, dist)
+
+
+
+
+
+#generate_images_from_fcs()
+
+
+#machin = load_matrix_from_compensation_file("choucroute_is_fun.txt")
+#truc = load_matrix_from_compensation_file("Panel_1_UBO_32151130.txt")
+
+#bidule = sex_matrix(machin, truc)
+#print bidule
 
 
 """
